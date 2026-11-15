@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Letter Hero</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1a0b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bangers&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -40,10 +47,12 @@
       radial-gradient(circle at 50% 30%, var(--bg2), var(--bg1) 75%);
     color: var(--text);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   body.theme-minecraft {
@@ -417,6 +426,11 @@
 </div>
 
 <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+</script>
+<script>
 (function () {
   const $ = id => document.getElementById(id);
 
@@ -625,6 +639,11 @@
     $('flashStage').classList.remove('hidden');
     $('playControls').classList.remove('hidden');
     $('btnPause').textContent = '⏸ PAUSE';
+    if (!window.matchMedia('(display-mode: fullscreen)').matches &&
+        !window.matchMedia('(display-mode: standalone)').matches &&
+        document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+    }
     showCard();
     restartTimer();
   }
@@ -633,6 +652,9 @@
     playing = false;
     paused = false;
     clearInterval(timer);
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
     document.body.classList.remove('playing');
     $('flashStage').classList.add('hidden');
     $('playControls').classList.add('hidden');
