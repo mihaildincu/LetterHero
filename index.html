@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Letter Flash Hero</title>
+<title>Letter Hero</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bangers&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -286,6 +286,52 @@
 
   .hidden { display: none !important; }
 
+  /* Collapsible panel */
+  .collapsible { cursor: pointer; user-select: none; }
+  .collapsible span { float: right; }
+
+  /* Letter buttons */
+  .letter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .letter-grid button {
+    font-size: 12px;
+    padding: 8px 0;
+    width: 38px;
+    background: linear-gradient(180deg, #555, #333);
+    color: #fff;
+    border-color: #000;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.2);
+  }
+  .letter-grid button.selected {
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    color: #06120a;
+    border-color: #06120a;
+    box-shadow: 0 0 12px rgba(124,252,0,.5), inset 0 2px 0 rgba(255,255,255,.4);
+  }
+  body.theme-minecraft .letter-grid button.selected {
+    box-shadow: 4px 4px 0 rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.25);
+    border-color: #2d1f14;
+  }
+
+  .mode-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .mode-buttons button { flex: 1 1 auto; }
+  .mode-buttons button:not(.active) {
+    background: linear-gradient(180deg, #555, #333);
+    color: #fff;
+    border-color: #000;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.2);
+  }
+
   /* Fullscreen-ish mode while playing */
   body.playing .setup { display: none; }
 
@@ -300,32 +346,30 @@
 </div>
 
 <header>
-  <h1>LETTER FLASH HERO</h1>
   <div class="omnitrix"></div>
-  <div class="subtitle">Teach your little hero letters, groups &amp; words!</div>
 </header>
 
 <!-- ===== SETUP PANEL ===== -->
 <div class="setup">
   <div class="panel">
-    <h2>1. IMPORT CARDS (CSV)</h2>
-    <div class="row">
-      <div>
-        <label>Choose a .csv file (values separated by commas or new lines):</label>
-        <input type="file" id="csvFile" accept=".csv,.txt,text/csv">
+    <h2 class="collapsible" id="panelToggle">1. CARDS <span id="panelArrow">▾</span></h2>
+    <div id="panelContent">
+      <div class="letter-grid" id="letterGrid"></div>
+      <div class="mode-buttons">
+        <button class="mode active" id="btnModeLetters" data-mode="letters">Letters</button>
+        <button class="mode" id="btnModeGroups" data-mode="groups">Letter Groups</button>
+        <button class="mode" id="btnModeWords" data-mode="words">Words</button>
       </div>
+      <div class="row" style="margin-top:10px">
+        <button class="secondary" id="btnExport">Export Settings</button>
+        <button class="secondary" id="btnImport">Import Settings</button>
+        <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+      </div>
+      <div style="margin-top:10px">
+        <input type="text" id="customInput" placeholder="Add custom words / letter groups (comma separated, press Enter)">
+      </div>
+      <div class="deck-preview" id="deckPreview"></div>
     </div>
-    <div style="margin-top:10px">
-      <label>...or type / paste values here (comma or new line separated):</label>
-      <textarea id="csvText" placeholder="A, B, C, AM, AN, AT, CAT, MAT"></textarea>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <button class="secondary" id="btnLetters">Load A–Z</button>
-      <button class="secondary" id="btnGroups">Load Letter Groups</button>
-      <button class="secondary" id="btnWords">Load Small Words</button>
-      <button class="secondary" id="btnClear">Clear</button>
-    </div>
-    <div class="deck-preview" id="deckPreview"></div>
   </div>
 
   <div class="panel">
@@ -358,7 +402,6 @@
   <div class="controls">
     <button class="big" id="btnStart">▶ START FLASHING</button>
   </div>
-  <div class="hint">Tip: click the card (or press Space) to go to the next card manually.</div>
 </div>
 
 <!-- ===== FLASH STAGE ===== -->
@@ -387,22 +430,71 @@
   const DEFAULT_GROUPS = ['AM','AN','AT','AS','AP','IT','IS','IN','IT','MA','ME','MI','MO','SA','SE','SI','SO','TA','TE','TI','TO'];
   const DEFAULT_WORDS = ['CAT','MAT','SAT','HAT','DOG','BIG','SUN','MOM','DAD','CAR','BUS','CUP','BED','RED','TEN','PIG','MAP','JAM'];
 
-  // ---------- CSV ----------
-  function parseCSV(text) {
-    return text.split(/[,\r\n;|]+/).map(s => s.trim()).filter(s => s.length > 0);
+  let selectedLetters = new Set();
+  let mode = 'letters';
+  let customItems = [];
+
+  // ---------- Collapsible panel ----------
+  $('panelToggle').onclick = () => {
+    const content = $('panelContent');
+    const collapsed = content.classList.toggle('hidden');
+    $('panelArrow').textContent = collapsed ? '▸' : '▾';
+  };
+
+  // ---------- Letter selection ----------
+  const letterGrid = $('letterGrid');
+  DEFAULT_LETTERS.forEach(l => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = l;
+    btn.onclick = () => {
+      if (selectedLetters.has(l)) {
+        selectedLetters.delete(l);
+        btn.classList.remove('selected');
+      } else {
+        selectedLetters.add(l);
+        btn.classList.add('selected');
+      }
+      rebuildDeck();
+    };
+    letterGrid.appendChild(btn);
+  });
+
+  // ---------- Mode ----------
+  const modeButtons = [$('btnModeLetters'), $('btnModeGroups'), $('btnModeWords')];
+  modeButtons.forEach(btn => {
+    btn.onclick = () => {
+      mode = btn.dataset.mode;
+      modeButtons.forEach(b => b.classList.toggle('active', b === btn));
+      rebuildDeck();
+    };
+  });
+
+  // ---------- Deck ----------
+  function buildDeckForMode() {
+    let items;
+    if (mode === 'groups') {
+      items = DEFAULT_GROUPS.filter(g => g.split('').every(c => selectedLetters.has(c)));
+    } else if (mode === 'words') {
+      items = DEFAULT_WORDS.filter(w => w.split('').every(c => selectedLetters.has(c)));
+    } else {
+      items = DEFAULT_LETTERS.filter(l => selectedLetters.has(l));
+    }
+    return items.concat(customItems.filter(c => !items.includes(c)));
   }
 
-  function setDeck(items, sourceLabel) {
-    deck = items;
+  const MODE_LABELS = { letters: 'letters', groups: 'letter groups', words: 'small words' };
+
+  function rebuildDeck() {
+    deck = buildDeckForMode();
     idx = 0;
-    renderPreview(sourceLabel);
+    renderPreview(MODE_LABELS[mode]);
   }
 
   function renderPreview(label) {
     const el = $('deckPreview');
-    if (!deck.length) { el.innerHTML = '<em>No cards loaded yet.</em>'; return; }
-    let html = '<strong>' + deck.length + ' cards' + (label ? ' (' + label + ')' : '') + ':</strong><br>';
-    html += deck.slice(0, 60).map(c => '<span class="chip">' + escapeHTML(c) + '</span>').join('');
+    if (!deck.length) { el.innerHTML = '<em>No cards — select some letters above.</em>'; return; }
+    let html = deck.slice(0, 60).map(c => '<span class="chip">' + escapeHTML(c) + '</span>').join('');
     if (deck.length > 60) html += ' …';
     el.innerHTML = html;
   }
@@ -411,23 +503,55 @@
     return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
-  $('csvFile').addEventListener('change', e => {
+  function applySettings(letters, newMode, custom) {
+    selectedLetters = new Set(letters.filter(l => DEFAULT_LETTERS.includes(l)));
+    if (['letters', 'groups', 'words'].includes(newMode)) mode = newMode;
+    customItems = Array.isArray(custom)
+      ? custom.map(s => String(s).trim().toUpperCase()).filter(s => s.length > 0)
+      : [];
+    letterGrid.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('selected', selectedLetters.has(btn.textContent));
+    });
+    modeButtons.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    rebuildDeck();
+  }
+
+  // ---------- Custom items ----------
+  $('customInput').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const items = e.target.value.split(/[,\r\n;|]+/).map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
+    items.forEach(item => { if (!customItems.includes(item)) customItems.push(item); });
+    e.target.value = '';
+    rebuildDeck();
+  });
+
+  // ---------- Export / Import ----------
+  $('btnExport').onclick = () => {
+    const data = JSON.stringify({ letters: [...selectedLetters], mode, custom: customItems }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'letter-hero-settings.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  $('btnImport').onclick = () => $('importFile').click();
+  $('importFile').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => setDeck(parseCSV(ev.target.result), file.name);
+    reader.onload = ev => {
+      try {
+        const cfg = JSON.parse(ev.target.result);
+        applySettings(Array.isArray(cfg.letters) ? cfg.letters : [], cfg.mode, cfg.custom);
+      } catch (err) {
+        alert('Invalid settings file.');
+      }
+    };
     reader.readAsText(file);
+    e.target.value = '';
   });
-
-  $('csvText').addEventListener('input', e => {
-    const items = parseCSV(e.target.value);
-    if (items.length) setDeck(items, 'typed');
-  });
-
-  $('btnLetters').onclick = () => { setDeck(DEFAULT_LETTERS.slice(), 'A–Z'); $('csvText').value = ''; };
-  $('btnGroups').onclick = () => { setDeck(DEFAULT_GROUPS.slice(), 'letter groups'); $('csvText').value = ''; };
-  $('btnWords').onclick = () => { setDeck(DEFAULT_WORDS.slice(), 'small words'); $('csvText').value = ''; };
-  $('btnClear').onclick = () => { setDeck([], ''); $('csvText').value = ''; $('csvFile').value = ''; };
 
   // ---------- Settings ----------
   $('speed').addEventListener('input', e => {
@@ -491,7 +615,7 @@
 
   function start() {
     if (!deck.length) {
-      setDeck(DEFAULT_LETTERS.slice(), 'A–Z');
+      applySettings(DEFAULT_LETTERS, 'letters', customItems);
     }
     order = currentOrder();
     idx = 0;
@@ -558,7 +682,7 @@
   setTheme(localStorage.getItem('flashTheme') || 'ben10');
 
   // init
-  setDeck(DEFAULT_LETTERS.slice(), 'A–Z');
+  rebuildDeck();
   $('flashLetter').style.fontSize = '150px';
 })();
 </script>
