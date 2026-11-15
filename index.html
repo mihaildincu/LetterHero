@@ -385,24 +385,24 @@
     <h2>2. SETTINGS</h2>
     <div class="row">
       <div>
-        <label>Speed — new card every: <span class="speed-val" id="speedVal">1500 ms</span></label>
+        <label>Speed: <span class="speed-val" id="speedVal">1500 ms</span></label>
         <input type="range" id="speed" min="300" max="5000" step="100" value="1500">
       </div>
       <div>
         <label>Card size:</label>
         <select id="fontSize">
           <option value="90">Small</option>
-          <option value="150" selected>Big</option>
-          <option value="220">Huge</option>
+          <option value="150">Big</option>
+          <option value="220" selected>Huge</option>
         </select>
       </div>
       <div>
         <label>Options:</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-          <input type="checkbox" id="shuffle" style="width:auto"> Shuffle
+          <input type="checkbox" id="shuffle" checked style="width:auto"> Shuffle
         </label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-          <input type="checkbox" id="loop" checked style="width:auto"> Loop forever
+          <input type="checkbox" id="loop" checked style="width:auto"> Loop
         </label>
       </div>
     </div>
@@ -441,8 +441,8 @@ if ('serviceWorker' in navigator) {
   let paused = false;
 
   const DEFAULT_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  const DEFAULT_GROUPS = ['AM','AN','AT','AS','AP','IT','IS','IN','IT','MA','ME','MI','MO','SA','SE','SI','SO','TA','TE','TI','TO'];
-  const DEFAULT_WORDS = ['CAT','MAT','SAT','HAT','DOG','BIG','SUN','MOM','DAD','CAR','BUS','CUP','BED','RED','TEN','PIG','MAP','JAM'];
+  const DEFAULT_GROUPS = ['AM','AN','AT','AS','AP','AC','AR','AL','AI','AU','EA','EI','EU','IE','IM','IN','IT','IS','IR','IL','IU','MA','ME','MI','MO','MU','NA','NE','NI','NO','NU','CA','CE','CI','CO','CU','TA','TE','TI','TO','TU','SA','SE','SI','SO','SU','RA','RE','RI','RO','RU','LA','LE','LI','LO','LU','DA','DE','DI','DO','DU','BA','BE','BI','BO','BU','PA','PE','PI','PO','PU','FA','FE','FI','FO','FU','VA','VE','VI','VO','VU','ZA','ZE','ZI','ZO','ZU','GA','GE','GI','GO','GU'];
+  const DEFAULT_WORDS = ['MAMA','MAMI','MAME','MINA','MIMA','MIMI','NANA','NANE','NINA','TATA','TATI','CASA','MARE','PAPA','LUNA','LENE','MANA','MASA','MATA','NORA','NUCA','OALA','PARA','PASA','RANA','RATA','SARE','SASE','SITA','SORA','TARA','TEMA','TINA','TUNA','UITE','VACA','VASE','VITA','MARE','PANE','PELE','RETE','STEA','SOIA','ZANA','ZMEU','CAL','NAS','OU','PAU'];
 
   let selectedLetters = new Set();
   let mode = 'letters';
@@ -507,7 +507,7 @@ if ('serviceWorker' in navigator) {
 
   function renderPreview(label) {
     const el = $('deckPreview');
-    if (!deck.length) { el.innerHTML = '<em>No cards — select some letters above.</em>'; return; }
+    if (!deck.length) { el.innerHTML = '<em>No cards — select some letters.</em>'; return; }
     let html = deck.slice(0, 60).map(c => '<span class="chip">' + escapeHTML(c) + '</span>').join('');
     if (deck.length > 60) html += ' …';
     el.innerHTML = html;
