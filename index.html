@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Letter Flash Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bangers&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #7cfc00;
+    --accent2: #00e676;
+    --bg1: #0b1a0b;
+    --bg2: #122412;
+    --card-bg: #14280f;
+    --card-border: #7cfc00;
+    --text: #ffffff;
+    --font-display: 'Press Start 2P', monospace;
+    --font-card: 'Bangers', cursive;
+    --radius: 8px;
+  }
+
+  body.theme-minecraft {
+    --accent: #8bc34a;
+    --accent2: #6aa833;
+    --bg1: #5d9440;
+    --bg2: #4a7a33;
+    --card-bg: #866043;
+    --card-border: #3d2b1f;
+    --text: #fff;
+    --font-display: 'Press Start 2P', monospace;
+    --font-card: 'Pixelify Sans', 'Press Start 2P', sans-serif;
+    --radius: 0px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:
+      radial-gradient(circle at 50% 30%, var(--bg2), var(--bg1) 75%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  body.theme-minecraft {
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 32px, transparent 32px 64px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 32px, transparent 32px 64px),
+      linear-gradient(#7ec850, #5d9440);
+    image-rendering: pixelated;
+  }
+
+  header {
+    text-align: center;
+    padding: 18px 10px 8px;
+    width: 100%;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(16px, 3.5vw, 30px);
+    color: var(--accent);
+    text-shadow: 0 0 12px rgba(124,252,0,.7), 3px 3px 0 #000;
+    letter-spacing: 2px;
+  }
+
+  body.theme-minecraft h1 {
+    text-shadow: 3px 3px 0 #2d1f14;
+    color: #fff;
+  }
+
+  .subtitle { margin-top: 8px; font-size: 13px; opacity: .8; }
+
+  /* Omnitrix symbol decoration for Ben10 theme */
+  .omnitrix {
+    width: 54px; height: 54px; margin: 10px auto 0;
+    background: #111;
+    border: 5px solid #9e9e9e;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 20px rgba(124,252,0,.6);
+  }
+  .omnitrix::before {
+    content: "";
+    position: absolute; inset: 6px;
+    background: var(--accent);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    box-shadow: 0 0 15px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  body.theme-minecraft .omnitrix {
+    border-radius: 0;
+    border-color: #3d2b1f;
+    background: #866043;
+    box-shadow: 4px 4px 0 #2d1f14;
+  }
+  body.theme-minecraft .omnitrix::before {
+    clip-path: none;
+    background:
+      linear-gradient(#6aa833, #4a7a33);
+    inset: 4px;
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%,100% { filter: brightness(1); }
+    50% { filter: brightness(1.6); }
+  }
+
+  .panel {
+    background: rgba(0,0,0,.35);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: 12px;
+    width: min(720px, 94vw);
+    box-shadow: 0 0 18px rgba(124,252,0,.25);
+  }
+  body.theme-minecraft .panel {
+    background: rgba(61,43,31,.85);
+    box-shadow: 5px 5px 0 rgba(0,0,0,.4);
+  }
+
+  .panel h2 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  body.theme-minecraft .panel h2 { color: #ffd54f; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .row > * { flex: 1 1 auto; }
+
+  label { font-size: 12px; display: block; margin-bottom: 4px; opacity: .9; }
+
+  input[type="file"] { font-size: 12px; color: var(--text); }
+  input[type="number"], input[type="text"], textarea, select {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255,255,255,.1);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  select option { background-color: #1b1b1b; color: #fff; }
+  body.theme-minecraft select option { background-color: #3d2b1f; color: #fff; }
+
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+  button {
+    font-family: var(--font-display);
+    font-size: 12px;
+    padding: 12px 18px;
+    cursor: pointer;
+    color: #06120a;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    border: 3px solid #06120a;
+    border-radius: var(--radius);
+    box-shadow: 0 0 12px rgba(124,252,0,.5), inset 0 2px 0 rgba(255,255,255,.4);
+    transition: transform .08s, filter .15s;
+  }
+  button:hover { filter: brightness(1.15); }
+  button:active { transform: scale(.95); }
+  button.secondary {
+    background: linear-gradient(180deg, #555, #333);
+    color: #fff;
+    border-color: #000;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.2);
+  }
+  button.big { font-size: 16px; padding: 16px 30px; }
+  body.theme-minecraft button {
+    box-shadow: 4px 4px 0 rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.25);
+    border-color: #2d1f14;
+  }
+
+  .deck-preview {
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .85;
+    max-height: 60px;
+    overflow-y: auto;
+    word-break: break-all;
+  }
+  .chip {
+    display: inline-block;
+    background: rgba(124,252,0,.15);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 2px 7px;
+    margin: 2px;
+    font-weight: bold;
+  }
+
+  /* ===== Flash area ===== */
+  #flashStage {
+    width: min(720px, 94vw);
+    height: min(46vh, 380px);
+    margin: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.5);
+    border: 4px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: 0 0 40px rgba(124,252,0,.35), inset 0 0 60px rgba(0,0,0,.6);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+  }
+  body.theme-minecraft #flashStage {
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 24px, transparent 24px 48px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 24px, transparent 24px 48px),
+      #6b4a30;
+    border-color: #3d2b1f;
+    box-shadow: 8px 8px 0 rgba(0,0,0,.4);
+  }
+
+  #flashLetter {
+    font-family: var(--font-card);
+    color: #fff;
+    text-shadow: 0 0 25px var(--accent), 4px 4px 0 #000;
+    letter-spacing: 4px;
+    transition: opacity .12s;
+    text-align: center;
+    padding: 0 10px;
+    word-break: break-word;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+  }
+  body.theme-minecraft #flashLetter {
+    text-shadow: 5px 5px 0 #2d1f14;
+    color: #fff;
+    letter-spacing: 2px;
+    -webkit-text-stroke: 1.5px #fff;
+    paint-order: stroke fill;
+  }
+  #flashLetter.pop { animation: pop .25s ease-out; }
+  @keyframes pop {
+    0% { transform: scale(.4); opacity: 0; }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  #counter {
+    position: absolute;
+    bottom: 8px; right: 14px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    opacity: .7;
+  }
+  #progressBar {
+    position: absolute;
+    bottom: 0; left: 0; height: 6px;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    width: 0%;
+    transition: width .1s linear;
+  }
+
+  .controls {
+    display: flex; gap: 12px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+
+  .hint { font-size: 11px; opacity: .6; text-align: center; margin-bottom: 16px; }
+
+  .theme-toggle {
+    position: fixed;
+    top: 10px; right: 10px;
+    display: flex; gap: 6px;
+    z-index: 10;
+  }
+  .theme-toggle button { font-size: 10px; padding: 8px 10px; }
+  .theme-toggle button.active { outline: 3px solid #fff; }
+
+  .hidden { display: none !important; }
+
+  /* Fullscreen-ish mode while playing */
+  body.playing .setup { display: none; }
+
+  .speed-val { font-family: var(--font-display); font-size: 11px; color: var(--accent); }
+</style>
+</head>
+<body class="theme-ben10">
+
+<div class="theme-toggle">
+  <button id="btnBen10" class="active" title="Ben 10 theme">BEN 10</button>
+  <button id="btnMinecraft" title="Minecraft theme">MINECRAFT</button>
+</div>
+
+<header>
+  <h1>LETTER FLASH HERO</h1>
+  <div class="omnitrix"></div>
+  <div class="subtitle">Teach your little hero letters, groups &amp; words!</div>
+</header>
+
+<!-- ===== SETUP PANEL ===== -->
+<div class="setup">
+  <div class="panel">
+    <h2>1. IMPORT CARDS (CSV)</h2>
+    <div class="row">
+      <div>
+        <label>Choose a .csv file (values separated by commas or new lines):</label>
+        <input type="file" id="csvFile" accept=".csv,.txt,text/csv">
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <label>...or type / paste values here (comma or new line separated):</label>
+      <textarea id="csvText" placeholder="A, B, C, AM, AN, AT, CAT, MAT"></textarea>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="btnLetters">Load A–Z</button>
+      <button class="secondary" id="btnGroups">Load Letter Groups</button>
+      <button class="secondary" id="btnWords">Load Small Words</button>
+      <button class="secondary" id="btnClear">Clear</button>
+    </div>
+    <div class="deck-preview" id="deckPreview"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2. SETTINGS</h2>
+    <div class="row">
+      <div>
+        <label>Speed — new card every: <span class="speed-val" id="speedVal">1500 ms</span></label>
+        <input type="range" id="speed" min="300" max="5000" step="100" value="1500">
+      </div>
+      <div>
+        <label>Card size:</label>
+        <select id="fontSize">
+          <option value="90">Small</option>
+          <option value="150" selected>Big</option>
+          <option value="220">Huge</option>
+        </select>
+      </div>
+      <div>
+        <label>Options:</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+          <input type="checkbox" id="shuffle" style="width:auto"> Shuffle
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+          <input type="checkbox" id="loop" checked style="width:auto"> Loop forever
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="big" id="btnStart">▶ START FLASHING</button>
+  </div>
+  <div class="hint">Tip: click the card (or press Space) to go to the next card manually.</div>
+</div>
+
+<!-- ===== FLASH STAGE ===== -->
+<div id="flashStage" class="hidden" title="Click for next card">
+  <div id="flashLetter">A</div>
+  <div id="counter"></div>
+  <div id="progressBar"></div>
+</div>
+<div class="controls hidden" id="playControls">
+  <button id="btnPause">⏸ PAUSE</button>
+  <button id="btnNext" class="secondary">⏭ NEXT</button>
+  <button id="btnStop" class="secondary">✖ STOP</button>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+
+  let deck = [];
+  let idx = 0;
+  let timer = null;
+  let playing = false;
+  let paused = false;
+
+  const DEFAULT_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const DEFAULT_GROUPS = ['AM','AN','AT','AS','AP','IT','IS','IN','IT','MA','ME','MI','MO','SA','SE','SI','SO','TA','TE','TI','TO'];
+  const DEFAULT_WORDS = ['CAT','MAT','SAT','HAT','DOG','BIG','SUN','MOM','DAD','CAR','BUS','CUP','BED','RED','TEN','PIG','MAP','JAM'];
+
+  // ---------- CSV ----------
+  function parseCSV(text) {
+    return text.split(/[,\r\n;|]+/).map(s => s.trim()).filter(s => s.length > 0);
+  }
+
+  function setDeck(items, sourceLabel) {
+    deck = items;
+    idx = 0;
+    renderPreview(sourceLabel);
+  }
+
+  function renderPreview(label) {
+    const el = $('deckPreview');
+    if (!deck.length) { el.innerHTML = '<em>No cards loaded yet.</em>'; return; }
+    let html = '<strong>' + deck.length + ' cards' + (label ? ' (' + label + ')' : '') + ':</strong><br>';
+    html += deck.slice(0, 60).map(c => '<span class="chip">' + escapeHTML(c) + '</span>').join('');
+    if (deck.length > 60) html += ' …';
+    el.innerHTML = html;
+  }
+
+  function escapeHTML(s) {
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  $('csvFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setDeck(parseCSV(ev.target.result), file.name);
+    reader.readAsText(file);
+  });
+
+  $('csvText').addEventListener('input', e => {
+    const items = parseCSV(e.target.value);
+    if (items.length) setDeck(items, 'typed');
+  });
+
+  $('btnLetters').onclick = () => { setDeck(DEFAULT_LETTERS.slice(), 'A–Z'); $('csvText').value = ''; };
+  $('btnGroups').onclick = () => { setDeck(DEFAULT_GROUPS.slice(), 'letter groups'); $('csvText').value = ''; };
+  $('btnWords').onclick = () => { setDeck(DEFAULT_WORDS.slice(), 'small words'); $('csvText').value = ''; };
+  $('btnClear').onclick = () => { setDeck([], ''); $('csvText').value = ''; $('csvFile').value = ''; };
+
+  // ---------- Settings ----------
+  $('speed').addEventListener('input', e => {
+    $('speedVal').textContent = e.target.value + ' ms';
+    if (playing && !paused) restartTimer();
+  });
+
+  $('fontSize').addEventListener('change', e => {
+    $('flashLetter').style.fontSize = e.target.value + 'px';
+    fitText();
+  });
+
+  function fitText() {
+    const el = $('flashLetter');
+    const base = parseInt($('fontSize').value, 10);
+    const len = el.textContent.length;
+    let size = base;
+    if (len > 4) size = Math.max(40, Math.floor(base * 5 / len));
+    el.style.fontSize = size + 'px';
+  }
+
+  // ---------- Playback ----------
+  function currentOrder() {
+    const arr = deck.slice();
+    if ($('shuffle').checked) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    return arr;
+  }
+
+  let order = [];
+
+  function showCard() {
+    if (!order.length) return;
+    if (idx >= order.length) {
+      if ($('loop').checked) {
+        idx = 0;
+        order = currentOrder();
+      } else {
+        stop();
+        return;
+      }
+    }
+    const el = $('flashLetter');
+    el.textContent = order[idx];
+    el.classList.remove('pop');
+    void el.offsetWidth; // restart animation
+    el.classList.add('pop');
+    fitText();
+    $('counter').textContent = (idx + 1) + ' / ' + order.length;
+    $('progressBar').style.width = ((idx + 1) / order.length * 100) + '%';
+  }
+
+  function restartTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => { idx++; showCard(); }, parseInt($('speed').value, 10));
+  }
+
+  function start() {
+    if (!deck.length) {
+      setDeck(DEFAULT_LETTERS.slice(), 'A–Z');
+    }
+    order = currentOrder();
+    idx = 0;
+    playing = true;
+    paused = false;
+    document.body.classList.add('playing');
+    $('flashStage').classList.remove('hidden');
+    $('playControls').classList.remove('hidden');
+    $('btnPause').textContent = '⏸ PAUSE';
+    showCard();
+    restartTimer();
+  }
+
+  function stop() {
+    playing = false;
+    paused = false;
+    clearInterval(timer);
+    document.body.classList.remove('playing');
+    $('flashStage').classList.add('hidden');
+    $('playControls').classList.add('hidden');
+  }
+
+  function togglePause() {
+    if (!playing) return;
+    paused = !paused;
+    if (paused) {
+      clearInterval(timer);
+      $('btnPause').textContent = '▶ RESUME';
+    } else {
+      $('btnPause').textContent = '⏸ PAUSE';
+      restartTimer();
+    }
+  }
+
+  function next() {
+    if (!playing) return;
+    idx++;
+    showCard();
+    if (!paused) restartTimer();
+  }
+
+  $('btnStart').onclick = start;
+  $('btnStop').onclick = stop;
+  $('btnPause').onclick = togglePause;
+  $('btnNext').onclick = next;
+  $('flashStage').onclick = next;
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') { e.preventDefault(); playing ? next() : start(); }
+    if (e.code === 'Escape') stop();
+    if (e.code === 'KeyP') togglePause();
+  });
+
+  // ---------- Themes ----------
+  function setTheme(name) {
+    document.body.className = 'theme-' + name + (playing ? ' playing' : '');
+    $('btnBen10').classList.toggle('active', name === 'ben10');
+    $('btnMinecraft').classList.toggle('active', name === 'minecraft');
+    localStorage.setItem('flashTheme', name);
+  }
+  $('btnBen10').onclick = () => setTheme('ben10');
+  $('btnMinecraft').onclick = () => setTheme('minecraft');
+  setTheme(localStorage.getItem('flashTheme') || 'ben10');
+
+  // init
+  setDeck(DEFAULT_LETTERS.slice(), 'A–Z');
+  $('flashLetter').style.fontSize = '150px';
+})();
+</script>
+</body>
+</html>
